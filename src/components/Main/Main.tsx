@@ -7,9 +7,14 @@ import SideFilter from "../SideFilter/SideFilter";
 import { LoadedDevice } from "../../interfaces/interfaces"; 
 import fetchData from "../../api/fetchData";
 import styles from './Main.module.css';
+import { devicesStore } from "../../store";
+import { observer } from "mobx-react";
 
 const Main = () => {
-    const [loadedDevices, setLoadedDevices] = useState<LoadedDevice[]>([]);
+    // const [loadedDevices, setLoadedDevices] = useState<LoadedDevice[]>([]);
+    const loadedDevices = devicesStore.loadedDevices;
+    
+   
     const [filteredByCategory, setFilteredByCategory] = useState<LoadedDevice[]>([]);
     const [filteredByModel, setFilteredByModel] = useState<LoadedDevice[]>([]);
     const [finalDevices, setFinalDevices] = useState<LoadedDevice[]>([]);
@@ -18,20 +23,31 @@ const Main = () => {
     const [chosenModel, setChosenModel] = useState<string[]>([]);
     const { cartItems } = useContext(CartContext);
     const toast = useToast();
-    
+
 
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                const devicesData = await fetchData();
-                setLoadedDevices(devicesData);
-                filterByCategory('All', devicesData);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        loadData();
+        devicesStore.loadDevices();
+
     }, []);
+
+   
+    // const filteredByCategory = filterByCategory(chosenCategory, loadedDevices);
+
+    // console.log(filteredByCategory);
+    
+
+    // useEffect(() => {
+    //     const loadData = async () => {
+    //         try {
+    //             const devicesData = await fetchData();
+    //             setLoadedDevices(devicesData);
+    //             filterByCategory('All', devicesData);
+    //         } catch (error) {
+    //             console.error(error);
+    //         }
+    //     };
+    //     loadData();
+    // }, []);
 
     useEffect(() => {
         if(filteredByModel.length === 0) {
@@ -39,21 +55,20 @@ const Main = () => {
         } else {
             setFinalDevices(filteredByModel);
         }
-    }, [filteredByCategory, filteredByModel, chosenModel])
+    }, [filteredByCategory, filteredByModel, chosenModel]);
 
-    const filterByCategory = (category = 'All', devices: LoadedDevice[]) => {
+    function filterByCategory (category = 'All', devices: LoadedDevice[]) {
         if(category  === 'All') {
-            // setFilteredByCategory(devices);
-           
+            // return devices;
             setFinalDevices(devices);
         } else {
-         
-            // setChosenModel([]);
             const filteredDevices = devices.filter((device) => device.name.split(' ')[1] === category.split(' ')[1]);
-            
+            // return filteredDevices;
             setFilteredByCategory(filteredDevices);
         }
     };
+
+
 
     const filterByModel = (name: string[], devices: LoadedDevice[]) => {
         if(name.length === 0) {
@@ -64,11 +79,13 @@ const Main = () => {
         }
     };
 
+
     const onModelChangeHandler = (selectedModels: string[]) => {
         setChosenModel(selectedModels);
         filterByModel(selectedModels, filteredByCategory);
     };
 
+  
     useEffect(() => {
         if (cartItems.length === 0) return;
         toast({
@@ -104,4 +121,4 @@ const Main = () => {
     )
 };
 
-export default Main;
+export default observer(Main);

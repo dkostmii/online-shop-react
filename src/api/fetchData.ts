@@ -9,7 +9,7 @@ const fetchData = async (): Promise<LoadedDevice[]> => {
         }
 
         const data = await response.json();
-
+        
         const loadedDevices: LoadedDevice[] = [];
         for (let key in data) {
             loadedDevices.push({
